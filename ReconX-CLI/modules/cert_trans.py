@@ -1,6 +1,6 @@
 import requests
 
-def certificate_transparency(target):
+def certificate_transparency(target, output_folder=None):
     """
     Perform certificate transparency enumeration using crt.sh.
     Returns a list of unique subdomains.

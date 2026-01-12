@@ -1,26 +1,33 @@
 import subprocess
 import re
+import os
 
-def verification_filtering(all_subs_raw, target):
+def verification_filtering(all_subs_raw, target, output_folder=None):
     """
     Filter subdomains and verify live ones using httpx.
     Returns a list of live subdomains.
     """
+    # Use current directory if no output folder specified
+    if output_folder is None:
+        output_folder = '.'
+    
     # Filter invalid domains
     pattern = rf'^[a-zA-Z0-9.-]+\.{re.escape(target)}$'
     filtered = [sub for sub in all_subs_raw if not sub.startswith('*') and re.match(pattern, sub)]
 
     # Write filtered to file
-    with open('filtered_subs.txt', 'w') as f:
+    filtered_file = os.path.join(output_folder, 'filtered_subs.txt')
+    with open(filtered_file, 'w') as f:
         for sub in filtered:
             f.write(f'{sub}\n')
 
     # Run httpx
     live_subs = []
     try:
-        subprocess.run(['httpx', '-l', 'filtered_subs.txt', '-silent', '-title', '-status-code', '-tech-detect', '-content-length', '-o', 'live_subs_detailed.txt'], check=True, timeout=300)
+        detailed_file = os.path.join(output_folder, 'live_subs_detailed.txt')
+        subprocess.run(['httpx', '-l', filtered_file, '-silent', '-title', '-status-code', '-tech-detect', '-content-length', '-o', detailed_file], check=True, timeout=300)
         # Read the detailed output
-        with open('live_subs_detailed.txt', 'r') as f:
+        with open(detailed_file, 'r') as f:
             for line in f:
                 parts = line.split()
                 if parts:

@@ -56,7 +56,7 @@ export PATH=$PATH:$(go env GOPATH)/bin
 python main.py example.com
 ```
 
-Results saved to `final_subdomains.txt`
+Results saved to `example_com/live_subs.txt` (target-specific folder)
 
 ---
 
@@ -256,7 +256,25 @@ On first run, the tool will:
 1. Check for required tools
 2. Install any missing tools (if needed)
 3. Verify installation
-4. Start enumeration
+4. Create a target-specific folder (e.g., `google_com/`)
+5. Start enumeration
+6. Save phase results to separate files
+7. Create final results file
+8. Clean up intermediate files
+
+### Output Structure
+
+The tool creates a folder named after the target domain:
+
+```
+google_com/
+├── passive_enum.txt          # Results from passive enumeration
+├── active_enum.txt           # Results from active enumeration
+├── cert_trans.txt            # Results from certificate transparency
+└── live_subs.txt             # Final verified live subdomains
+```
+
+Intermediate files (subfinder.txt, amass_passive.txt, etc.) are automatically cleaned up after final results are created.
 
 ### Console Output
 
@@ -277,7 +295,9 @@ The tool displays progress for each phase:
 
 [+] All tools verified and ready to use!
 
-[+] Starting subdomain enumeration for example.com
+[+] Created results folder: google_com
+
+[+] Starting subdomain enumeration for google.com
 
 [+] Passive enumeration completed: 245 subdomains
 [+] Active enumeration completed: 89 subdomains
@@ -285,23 +305,36 @@ The tool displays progress for each phase:
 [+] Total raw subdomains: 412
 [+] Live subdomains verified: 87
 
-[+] Results saved to final_subdomains.txt
+[+] Results saved to google_com/live_subs.txt
+
+[*] Cleaning up intermediate files...
+
+[*] Cleaned up: subfinder.txt
+[*] Cleaned up: amass_passive.txt
+[*] Cleaned up: assetfinder.txt
+[*] Cleaned up: knockpy_results.json
+[*] Cleaned up: ffuf_subs.json
+[*] Cleaned up: filtered_subs.txt
+[*] Cleaned up: live_subs_detailed.txt
+
+[+] Enumeration completed successfully!
 ```
 
 ### Output Files
 
-After execution, the following files are generated:
+After execution, the following files are created in the target folder:
 
 | File | Description |
 |------|-------------|
-| `final_subdomains.txt` | Final list of verified live subdomains (main output) |
-| `filtered_subs.txt` | Subdomains after filtering but before verification |
-| `live_subs_detailed.txt` | Detailed information about live subdomains with status codes |
-| `subfinder.txt` | Raw output from subfinder |
-| `amass_passive.txt` | Raw output from amass passive enumeration |
-| `assetfinder.txt` | Raw output from assetfinder |
-| `knockpy_results.json` | Raw output from knockpy in JSON format |
-| `ffuf_subs.json` | Raw output from ffuf in JSON format |
+| `live_subs.txt` | **Final list of verified live subdomains (main output)** |
+| `passive_enum.txt` | Results from passive enumeration phase |
+| `active_enum.txt` | Results from active enumeration phase |
+| `cert_trans.txt` | Results from certificate transparency phase |
+
+**Intermediate files are automatically cleaned up** after `live_subs.txt` is created:
+- `subfinder.txt`, `amass_passive.txt`, `assetfinder.txt` (removed)
+- `knockpy_results.json`, `ffuf_subs.json` (removed)
+- `filtered_subs.txt`, `live_subs_detailed.txt` (removed)
 
 ### Enumeration Phases
 
