@@ -2,6 +2,9 @@
 import argparse
 import sys
 import os
+import subprocess
+import venv
+import platform
 import concurrent.futures
 import shutil
 
@@ -10,6 +13,85 @@ from modules.passive_enum import passive_enumeration
 from modules.active_enum import active_enumeration
 from modules.cert_trans import certificate_transparency
 from modules.verify_filter import verification_filtering
+
+def check_venv_active():
+    """Check if running inside a virtual environment"""
+    return hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix)
+
+def get_venv_path():
+    """Get the path to the venv directory"""
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(script_dir, 'venv')
+
+def create_and_activate_venv():
+    """Create venv and install dependencies"""
+    venv_path = get_venv_path()
+    
+    if check_venv_active():
+        print("[+] Already running in a virtual environment")
+        return True
+    
+    print("[*] Creating Python virtual environment...")
+    
+    try:
+        venv.create(venv_path, with_pip=True)
+        print(f"[+] Virtual environment created at {venv_path}")
+    except Exception as e:
+        print(f"[-] Failed to create virtual environment: {e}")
+        return False
+    
+    pip_executable = get_pip_executable(venv_path)
+    
+    print("[*] Installing Python dependencies from requirements.txt...")
+    try:
+        result = subprocess.run(
+            [pip_executable, 'install', '-r', 'requirements.txt'],
+            cwd=os.path.dirname(os.path.abspath(__file__)),
+            capture_output=True,
+            text=True,
+            timeout=300
+        )
+        if result.returncode != 0:
+            print(f"[-] Failed to install dependencies: {result.stderr}")
+            return False
+        print("[+] Python dependencies installed successfully")
+    except subprocess.TimeoutExpired:
+        print("[-] Dependency installation timed out")
+        return False
+    except Exception as e:
+        print(f"[-] Error installing dependencies: {e}")
+        return False
+    
+    print("\n[*] Activating virtual environment...")
+    relaunch_in_venv(venv_path)
+    return True
+
+def get_pip_executable(venv_path):
+    """Get the pip executable path for the venv"""
+    if platform.system() == "Windows":
+        return os.path.join(venv_path, 'Scripts', 'pip.exe')
+    else:
+        return os.path.join(venv_path, 'bin', 'pip')
+
+def get_python_executable(venv_path):
+    """Get the python executable path for the venv"""
+    if platform.system() == "Windows":
+        return os.path.join(venv_path, 'Scripts', 'python.exe')
+    else:
+        return os.path.join(venv_path, 'bin', 'python')
+
+def relaunch_in_venv(venv_path):
+    """Relaunch the script inside the virtual environment"""
+    python_executable = get_python_executable(venv_path)
+    script_path = os.path.abspath(__file__)
+    
+    print(f"[+] Relaunching script in virtual environment...\n")
+    
+    try:
+        os.execv(python_executable, [python_executable, script_path] + sys.argv[1:])
+    except Exception as e:
+        print(f"[-] Failed to relaunch in venv: {e}")
+        sys.exit(1)
 
 def create_target_folder(target):
     """Create a folder for the target domain"""
@@ -37,7 +119,6 @@ def cleanup_intermediate_files(folder):
         'subfinder.txt',
         'amass_passive.txt',
         'assetfinder.txt',
-        'knockpy_results.json',
         'ffuf_subs.json'
     ]
     
@@ -51,13 +132,21 @@ def cleanup_intermediate_files(folder):
                 print(f"[-] Failed to remove {filename}: {e}")
 
 def main():
+    if not check_venv_active():
+        print("\n" + "="*60)
+        print("ReconX-CLI: Automated Subdomain Enumeration Tool")
+        print("="*60 + "\n")
+        if not create_and_activate_venv():
+            print("[-] Failed to setup virtual environment")
+            sys.exit(1)
+    
     parser = argparse.ArgumentParser(
         description='ReconX-CLI: Automated Subdomain Enumeration Tool',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python main.py example.com
-  python main.py target.org
+  python reconx_cli.py example.com
+  python reconx_cli.py target.org
         """
     )
     parser.add_argument('TARGET', help='Target domain for subdomain enumeration')

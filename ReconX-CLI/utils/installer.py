@@ -217,20 +217,6 @@ class ToolInstaller:
         print("[-] Failed to install HTTPX")
         return False
 
-    def install_knockpy(self):
-        """Install Knockpy"""
-        print("[*] Installing Knockpy...")
-        
-        if self.check_python_package("knockpy"):
-            print("[+] Knockpy is already installed")
-            return True
-        
-        if self.run_command(f"{sys.executable} -m pip install knockpy"):
-            print("[+] Knockpy installed successfully")
-            return True
-        
-        print("[-] Failed to install Knockpy")
-        return False
 
     def install_requests(self):
         """Install Requests"""
@@ -255,7 +241,6 @@ class ToolInstaller:
             "subfinder": self.check_command_exists("subfinder"),
             "amass": self.check_command_exists("amass"),
             "assetfinder": self.check_command_exists("assetfinder"),
-            "knockpy": self.check_python_package("knockpy"),
             "ffuf": self.check_command_exists("ffuf"),
             "httpx": self.check_command_exists("httpx"),
             "requests": self.check_python_package("requests"),
@@ -281,7 +266,6 @@ class ToolInstaller:
             "subfinder": self.install_subfinder,
             "amass": self.install_amass,
             "assetfinder": self.install_assetfinder,
-            "knockpy": self.install_knockpy,
             "ffuf": self.install_ffuf,
             "httpx": self.install_httpx,
             "requests": self.install_requests,
