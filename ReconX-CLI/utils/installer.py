@@ -211,8 +211,15 @@ class ToolInstaller:
         
         self.add_go_to_path()
         
+        # Try installing from go install first
         if self.run_command("go install github.com/sensepost/gowitness@latest"):
             print("[+] GoWitness installed successfully")
+            return True
+        
+        # If that fails, try installing from git repository
+        print("[*] Attempting to install from GitHub repository...")
+        if self.run_command("go install github.com/sensepost/gowitness.git@latest"):
+            print("[+] GoWitness installed successfully from GitHub")
             return True
         
         print("[-] Failed to install GoWitness")
