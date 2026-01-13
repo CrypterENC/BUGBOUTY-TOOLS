@@ -147,7 +147,6 @@ def curl_brute_force(url, username_file, password_file, reset_url=None, max_atte
                         # Check if response doesn't contain "Incorrect" (adjust as needed)
                         if "Incorrect" not in result.stdout:
                             print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Potential success: {user}:{password}")
-                            print(result.stdout)
 
                         attempts += 1
 
