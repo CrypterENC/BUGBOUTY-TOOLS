@@ -108,6 +108,25 @@ def save_phase_results(folder, phase_name, subdomains):
             f.write(f"{sub}\n")
     return filename
 
+def get_wordlist_from_user(phase_name):
+    """Prompt user for wordlist path"""
+    print(f"\n[?] Enter wordlist path for {phase_name} phase:")
+    print("[*] Leave empty to use default or skip this phase")
+    wordlist_path = input(">>> ").strip()
+    
+    if not wordlist_path:
+        return None
+    
+    if not os.path.exists(wordlist_path):
+        print(f"[-] Wordlist not found: {wordlist_path}")
+        retry = input("[?] Try another path? (y/n): ").strip().lower()
+        if retry == 'y':
+            return get_wordlist_from_user(phase_name)
+        return None
+    
+    print(f"[+] Using wordlist: {wordlist_path}")
+    return wordlist_path
+
 def cleanup_intermediate_files(folder):
     """Remove intermediate phase files after final results are created"""
     intermediate_files = [
@@ -162,12 +181,19 @@ Examples:
     print(f"\n[+] Created results folder: {target_folder}\n")
 
     print(f"\n[+] Starting subdomain enumeration for {target}\n")
+    
+    # Prompt for wordlists
+    print("\n" + "="*60)
+    print("Wordlist Configuration")
+    print("="*60)
+    active_wordlist = get_wordlist_from_user("Active Enumeration (FFUF)")
+    cert_wordlist = get_wordlist_from_user("Certificate Transparency")
 
     # Run phases in parallel for speed
     with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
         passive_future = executor.submit(passive_enumeration, target, target_folder)
-        active_future = executor.submit(active_enumeration, target, target_folder)
-        cert_future = executor.submit(certificate_transparency, target, target_folder)
+        active_future = executor.submit(active_enumeration, target, target_folder, active_wordlist)
+        cert_future = executor.submit(certificate_transparency, target, target_folder, cert_wordlist)
 
         passive_subs = passive_future.result()
         active_subs = active_future.result()
