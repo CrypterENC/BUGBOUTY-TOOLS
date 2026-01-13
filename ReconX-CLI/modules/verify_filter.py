@@ -66,11 +66,15 @@ def verification_filtering(all_subs_raw, target, output_folder=None, wordlist=No
         # Ask user for gowitness options
         use_better_options = get_gowitness_options()
         
+        # Set output paths for screenshots and database in target folder
+        screenshots_path = os.path.join(output_folder, 'screenshots')
+        db_uri = f"sqlite://{os.path.join(output_folder, 'gowitness.sqlite3')}"
+        
         if use_better_options:
-            gowitness_cmd = ['gowitness', 'scan', 'file', '-f', live_subs_file, '--write-db', '--timeout', '15']
+            gowitness_cmd = ['gowitness', 'scan', 'file', '-f', live_subs_file, '--write-db', '--timeout', '15', '-s', screenshots_path, '--write-db-uri', db_uri]
             print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Using better timeout (15 seconds)")
         else:
-            gowitness_cmd = ['gowitness', 'scan', 'file', '-f', live_subs_file, '--write-db']
+            gowitness_cmd = ['gowitness', 'scan', 'file', '-f', live_subs_file, '--write-db', '-s', screenshots_path, '--write-db-uri', db_uri]
             print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Using standard timeout (60 seconds)")
         
         subprocess.run(gowitness_cmd, check=True, timeout=1800)
