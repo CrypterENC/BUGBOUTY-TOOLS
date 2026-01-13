@@ -186,7 +186,6 @@ Examples:
     print("\n" + "="*60)
     print("Wordlist Configuration")
     print("="*60)
-    passive_wordlist = get_wordlist_from_user("Phase 1 (Passive Enumeration)")
     active_wordlist = get_wordlist_from_user("Phase 2 (Active Enumeration)")
     cert_wordlist = get_wordlist_from_user("Phase 3 (Certificate Transparency)")
     verify_wordlist = get_wordlist_from_user("Phase 4 (Verification & Filtering)")
@@ -210,8 +209,15 @@ Examples:
     print(f"[+] Certificate transparency completed: {len(cert_subs)} subdomains")
     save_phase_results(target_folder, 'cert_trans', cert_subs)
 
-    # Combine raw subdomains
+    # Combine raw subdomains from all three phases
     all_subs_raw = set(passive_subs + active_subs + cert_subs)
+    
+    # Create all_subs_raw.txt by combining passive_subs.txt, active_subs.txt, and crt_subs.txt
+    all_subs_raw_file = os.path.join(target_folder, 'all_subs_raw.txt')
+    with open(all_subs_raw_file, 'w') as f:
+        for sub in sorted(all_subs_raw):
+            f.write(f'{sub}\n')
+    
     print(f"[+] Total raw subdomains: {len(all_subs_raw)}")
 
     # Phase 4: Verification & Filtering

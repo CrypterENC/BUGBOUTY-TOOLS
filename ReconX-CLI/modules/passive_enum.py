@@ -3,8 +3,8 @@ import os
 
 def passive_enumeration(target, output_folder=None):
     """
-    Perform passive subdomain enumeration using subfinder, amass, and assetfinder.
-    Returns a list of unique subdomains.
+    Perform passive subdomain enumeration using subfinder and assetfinder.
+    Combines results into passive_subs.txt and returns a list of unique subdomains.
     """
     subs = set()
     
@@ -26,20 +26,6 @@ def passive_enumeration(target, output_folder=None):
     except FileNotFoundError:
         print("[-] subfinder not found")
 
-    # Run amass passive
-    try:
-        amass_output = os.path.join(output_folder, 'amass_passive.txt')
-        subprocess.run(['amass', 'enum', '-passive', '-d', target, '-o', amass_output], check=True, timeout=600)
-        if os.path.exists(amass_output):
-            with open(amass_output, 'r') as f:
-                subs.update(line.strip() for line in f if line.strip())
-    except subprocess.TimeoutExpired:
-        print("[-] amass passive timed out")
-    except subprocess.CalledProcessError as e:
-        print(f"[-] amass passive failed: {e}")
-    except FileNotFoundError:
-        print("[-] amass not found")
-
     # Run assetfinder
     try:
         assetfinder_output = os.path.join(output_folder, 'assetfinder.txt')
@@ -54,5 +40,11 @@ def passive_enumeration(target, output_folder=None):
         print(f"[-] assetfinder failed: {e}")
     except FileNotFoundError:
         print("[-] assetfinder not found")
+
+    # Combine passive results into passive_subs.txt
+    passive_subs_file = os.path.join(output_folder, 'passive_subs.txt')
+    with open(passive_subs_file, 'w') as f:
+        for sub in sorted(subs):
+            f.write(f'{sub}\n')
 
     return list(subs)

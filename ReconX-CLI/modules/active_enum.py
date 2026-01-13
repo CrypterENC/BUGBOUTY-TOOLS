@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 def active_enumeration(target, output_folder=None, wordlist=None):
     """
     Perform active subdomain enumeration using ffuf.
-    Returns a list of unique subdomains.
+    Combines results into active_subs.txt and returns a list of unique subdomains.
     """
     subs = set()
     
@@ -41,5 +41,11 @@ def active_enumeration(target, output_folder=None, wordlist=None):
         print(f"[-] ffuf failed: {e}")
     except FileNotFoundError:
         print("[-] ffuf not found")
+
+    # Combine active results into active_subs.txt
+    active_subs_file = os.path.join(output_folder, 'active_subs.txt')
+    with open(active_subs_file, 'w') as f:
+        for sub in sorted(subs):
+            f.write(f'{sub}\n')
 
     return list(subs)
