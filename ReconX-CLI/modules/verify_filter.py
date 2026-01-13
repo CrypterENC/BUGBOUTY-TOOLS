@@ -67,11 +67,11 @@ def verification_filtering(all_subs_raw, target, output_folder=None, wordlist=No
         use_better_options = get_gowitness_options()
         
         if use_better_options:
-            gowitness_cmd = ['gowitness', 'scan', 'file', '-f', live_subs_file, '--write-db', '--timeout', '15s', '--retry-count', '2']
-            print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Using better timeouts (15s) and retries (2)")
+            gowitness_cmd = ['gowitness', 'scan', 'file', '-f', live_subs_file, '--write-db', '--timeout', '15']
+            print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Using better timeout (15 seconds)")
         else:
             gowitness_cmd = ['gowitness', 'scan', 'file', '-f', live_subs_file, '--write-db']
-            print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Using standard timeout")
+            print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Using standard timeout (60 seconds)")
         
         subprocess.run(gowitness_cmd, check=True, timeout=1800)
         print(f"{Fore.GREEN}[+]{Style.RESET_ALL} GoWitness screenshots captured successfully")
