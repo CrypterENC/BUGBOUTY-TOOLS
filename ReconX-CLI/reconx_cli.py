@@ -16,6 +16,7 @@ from modules.passive_enum import passive_enumeration
 from modules.active_enum import active_enumeration
 from modules.cert_trans import certificate_transparency
 from modules.verify_filter import verification_filtering
+from modules.brute_forcing import run_sniper_mode, run_cluster_mode, run_curl_brute_force
 
 def check_venv_active():
     """Check if running inside a virtual environment"""
@@ -155,38 +156,22 @@ def cleanup_intermediate_files(folder):
             except Exception as e:
                 print(f"{Fore.RED}[-]{Style.RESET_ALL} Failed to remove {filename}: {e}")
 
-def main():
-    if not check_venv_active():
-        print("\n" + "="*60)
-        print(f"{Fore.CYAN}ReconX-CLI: Automated Subdomain Enumeration Tool{Style.RESET_ALL}")
-        print("="*60 + "\n")
-        if not create_and_activate_venv():
-            print(f"{Fore.RED}[-]{Style.RESET_ALL} Failed to setup virtual environment")
-            sys.exit(1)
-    
-    parser = argparse.ArgumentParser(
-        description='ReconX-CLI: Automated Subdomain Enumeration Tool',
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-  python reconx_cli.py example.com
-  python reconx_cli.py target.org
-        """
-    )
-    parser.add_argument('TARGET', help='Target domain for subdomain enumeration')
-    args = parser.parse_args()
-
-    target = args.TARGET
-
+def run_subdomain_enumeration():
+    """Run the complete subdomain enumeration process"""
     print(f"\n{Fore.CYAN}[*]{Style.RESET_ALL} Checking and installing required tools...\n")
     ensure_tools_installed()
+
+    target = input(f"{Fore.YELLOW}>>>{Style.RESET_ALL} Enter target domain: ").strip()
+    if not target:
+        print(f"{Fore.RED}[-]{Style.RESET_ALL} Target domain is required.")
+        return
 
     # Create target-specific folder
     target_folder = create_target_folder(target)
     print(f"\n{Fore.GREEN}[+]{Style.RESET_ALL} Created results folder: {target_folder}\n")
 
     print(f"\n{Fore.GREEN}[+]{Style.RESET_ALL} Starting subdomain enumeration for {target}\n")
-    
+
     # Prompt for wordlist
     print("\n" + "="*60)
     print(f"{Fore.CYAN}Wordlist Configuration{Style.RESET_ALL}")
@@ -196,31 +181,31 @@ Examples:
     # Run phases sequentially
     print(f"\n{Fore.CYAN}[*]{Style.RESET_ALL} Running Phase 1: Passive Enumeration...")
     passive_subs = passive_enumeration(target, target_folder)
-    
+
     print(f"\n{Fore.CYAN}[*]{Style.RESET_ALL} Running Phase 2: Active Enumeration...")
     active_subs = active_enumeration(target, target_folder, active_wordlist)
-    
+
     print(f"\n{Fore.CYAN}[*]{Style.RESET_ALL} Running Phase 3: Certificate Transparency...")
     cert_subs = certificate_transparency(target, target_folder)
 
     print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Passive enumeration completed: {len(passive_subs)} subdomains")
     save_phase_results(target_folder, 'passive_enum', passive_subs)
-    
+
     print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Active enumeration completed: {len(active_subs)} subdomains")
     save_phase_results(target_folder, 'active_enum', active_subs)
-    
+
     print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Certificate transparency completed: {len(cert_subs)} subdomains")
     save_phase_results(target_folder, 'cert_trans', cert_subs)
 
     # Combine raw subdomains from all three phases
     all_subs_raw = set(passive_subs + active_subs + cert_subs)
-    
+
     # Create all_subs_raw.txt by combining passive_subs.txt, active_subs.txt, and crt_subs.txt
     all_subs_raw_file = os.path.join(target_folder, 'all_subs_raw.txt')
     with open(all_subs_raw_file, 'w') as f:
         for sub in sorted(all_subs_raw):
             f.write(f'{sub}\n')
-    
+
     print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Total raw subdomains: {len(all_subs_raw)}")
 
     # Phase 4: Verification & Filtering
@@ -239,7 +224,50 @@ Examples:
     print(f"{Fore.CYAN}[*]{Style.RESET_ALL} Cleaning up intermediate files...\n")
     cleanup_intermediate_files(target_folder)
 
-    print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Enumeration completed successfully!\n")
+def display_menu():
+    """Display the main menu"""
+    print("\n" + "="*60)
+    print(f"{Fore.CYAN}ReconX-CLI: Multi-Tool for Bug Bounty Hunting{Style.RESET_ALL}")
+    print("="*60)
+    print(f"{Fore.GREEN}1.{Style.RESET_ALL} Subdomain Enumeration")
+    print(f"{Fore.GREEN}2.{Style.RESET_ALL} Brute-Force (Sniper Mode - Single Parameter)")
+    print(f"{Fore.GREEN}3.{Style.RESET_ALL} Brute-Force (Cluster Mode - Username & Password)")
+    print(f"{Fore.GREEN}4.{Style.RESET_ALL} Brute-Force (Curl-Based - With Rate Limiting)")
+    print(f"{Fore.RED}5.{Style.RESET_ALL} Exit")
+    print("="*60)
+
+def main():
+    if not check_venv_active():
+        print("\n" + "="*60)
+        print(f"{Fore.CYAN}ReconX-CLI: Multi-Tool for Bug Bounty Hunting{Style.RESET_ALL}")
+        print("="*60 + "\n")
+        if not create_and_activate_venv():
+            print(f"{Fore.RED}[-]{Style.RESET_ALL} Failed to setup virtual environment")
+            sys.exit(1)
+
+    while True:
+        display_menu()
+        try:
+            choice = input(f"{Fore.YELLOW}>>>{Style.RESET_ALL} Select an option (1-5): ").strip()
+
+            if choice == '1':
+                run_subdomain_enumeration()
+            elif choice == '2':
+                run_sniper_mode()
+            elif choice == '3':
+                run_cluster_mode()
+            elif choice == '4':
+                run_curl_brute_force()
+            elif choice == '5':
+                print(f"{Fore.CYAN}[*]{Style.RESET_ALL} Exiting ReconX-CLI. Goodbye!")
+                break
+            else:
+                print(f"{Fore.RED}[-]{Style.RESET_ALL} Invalid choice. Please select 1-5.")
+        except KeyboardInterrupt:
+            print(f"\n{Fore.CYAN}[*]{Style.RESET_ALL} Exiting ReconX-CLI. Goodbye!")
+            break
+        except Exception as e:
+            print(f"{Fore.RED}[-]{Style.RESET_ALL} An error occurred: {e}")
 
 if __name__ == "__main__":
     main()
