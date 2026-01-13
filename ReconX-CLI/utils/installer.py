@@ -129,28 +129,6 @@ class ToolInstaller:
         print("[-] Failed to install Subfinder")
         return False
 
-    def install_amass(self):
-        """Install Amass"""
-        print("[*] Installing Amass...")
-        
-        if self.check_command_exists("amass"):
-            print("[+] Amass is already installed")
-            return True
-        
-        if not self.check_go_installed():
-            if not self.install_go():
-                print("[-] Failed to install Go")
-                return False
-        
-        self.add_go_to_path()
-        
-        if self.run_command("go install -v github.com/owasp/amass/v3/...@latest"):
-            print("[+] Amass installed successfully")
-            return True
-        
-        print("[-] Failed to install Amass")
-        return False
-
     def install_assetfinder(self):
         """Install Assetfinder"""
         print("[*] Installing Assetfinder...")
@@ -239,7 +217,6 @@ class ToolInstaller:
         
         tools = {
             "subfinder": self.check_command_exists("subfinder"),
-            "amass": self.check_command_exists("amass"),
             "assetfinder": self.check_command_exists("assetfinder"),
             "ffuf": self.check_command_exists("ffuf"),
             "httpx": self.check_command_exists("httpx"),
@@ -264,7 +241,6 @@ class ToolInstaller:
         
         installers = {
             "subfinder": self.install_subfinder,
-            "amass": self.install_amass,
             "assetfinder": self.install_assetfinder,
             "ffuf": self.install_ffuf,
             "httpx": self.install_httpx,
