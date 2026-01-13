@@ -4,6 +4,15 @@ import subprocess
 import time
 from colorama import Fore, Style
 
+def get_user_input(prompt, required=True):
+    """Get user input with validation"""
+    while True:
+        user_input = input(f"{Fore.YELLOW}>>>{Style.RESET_ALL} {prompt}").strip()
+        if required and not user_input:
+            print(f"{Fore.RED}[-]{Style.RESET_ALL} This field is required.")
+            continue
+        return user_input
+
 def sniper_mode(target_url, fuzz_param, wordlist_path, output_file=None, max_attempts=4, sleep_duration=5):
     """
     Run ffuf in sniper mode to fuzz one parameter with rate limiting
