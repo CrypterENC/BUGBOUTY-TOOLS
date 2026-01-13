@@ -51,4 +51,16 @@ def verification_filtering(all_subs_raw, target, output_folder=None, wordlist=No
         for sub in sorted(live_subs):
             f.write(f'{sub}\n')
 
+    # Run gowitness to capture screenshots
+    try:
+        print(f"{Fore.CYAN}[*]{Style.RESET_ALL} Running GoWitness to capture screenshots...")
+        subprocess.run(['gowitness', 'scan', 'file', '-f', live_subs_file, '--write-db'], check=True, timeout=1800)
+        print(f"{Fore.GREEN}[+]{Style.RESET_ALL} GoWitness screenshots captured successfully")
+    except subprocess.TimeoutExpired:
+        print(f"{Fore.RED}[-]{Style.RESET_ALL} gowitness timed out")
+    except subprocess.CalledProcessError as e:
+        print(f"{Fore.RED}[-]{Style.RESET_ALL} gowitness failed: {e}")
+    except FileNotFoundError:
+        print(f"{Fore.RED}[-]{Style.RESET_ALL} gowitness not found")
+
     return live_subs

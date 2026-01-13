@@ -196,6 +196,28 @@ class ToolInstaller:
         return False
 
 
+    def install_gowitness(self):
+        """Install GoWitness"""
+        print("[*] Installing GoWitness...")
+        
+        if self.check_command_exists("gowitness"):
+            print("[+] GoWitness is already installed")
+            return True
+        
+        if not self.check_go_installed():
+            if not self.install_go():
+                print("[-] Failed to install Go")
+                return False
+        
+        self.add_go_to_path()
+        
+        if self.run_command("go install github.com/sensepost/gowitness@latest"):
+            print("[+] GoWitness installed successfully")
+            return True
+        
+        print("[-] Failed to install GoWitness")
+        return False
+
     def install_requests(self):
         """Install Requests"""
         print("[*] Installing Requests...")
@@ -220,6 +242,7 @@ class ToolInstaller:
             "assetfinder": self.check_command_exists("assetfinder"),
             "ffuf": self.check_command_exists("ffuf"),
             "httpx": self.check_command_exists("httpx"),
+            "gowitness": self.check_command_exists("gowitness"),
             "requests": self.check_python_package("requests"),
         }
         
@@ -244,6 +267,7 @@ class ToolInstaller:
             "assetfinder": self.install_assetfinder,
             "ffuf": self.install_ffuf,
             "httpx": self.install_httpx,
+            "gowitness": self.install_gowitness,
             "requests": self.install_requests,
         }
         
