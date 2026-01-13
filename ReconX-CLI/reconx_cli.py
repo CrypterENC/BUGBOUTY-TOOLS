@@ -187,7 +187,6 @@ Examples:
     print("Wordlist Configuration")
     print("="*60)
     active_wordlist = get_wordlist_from_user("Phase 2 (Active Enumeration)")
-    cert_wordlist = get_wordlist_from_user("Phase 3 (Certificate Transparency)")
     verify_wordlist = get_wordlist_from_user("Phase 4 (Verification & Filtering)")
 
     # Run phases in parallel for speed
