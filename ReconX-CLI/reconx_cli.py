@@ -190,15 +190,15 @@ Examples:
     print("="*60)
     active_wordlist = get_wordlist_from_user("Phase 2 (Active Enumeration)")
 
-    # Run phases in parallel for speed
-    with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
-        passive_future = executor.submit(passive_enumeration, target, target_folder)
-        active_future = executor.submit(active_enumeration, target, target_folder, active_wordlist)
-        cert_future = executor.submit(certificate_transparency, target, target_folder)
-
-        passive_subs = passive_future.result()
-        active_subs = active_future.result()
-        cert_subs = cert_future.result()
+    # Run phases sequentially
+    print(f"\n{Fore.CYAN}[*]{Style.RESET_ALL} Running Phase 1: Passive Enumeration...")
+    passive_subs = passive_enumeration(target, target_folder)
+    
+    print(f"\n{Fore.CYAN}[*]{Style.RESET_ALL} Running Phase 2: Active Enumeration...")
+    active_subs = active_enumeration(target, target_folder, active_wordlist)
+    
+    print(f"\n{Fore.CYAN}[*]{Style.RESET_ALL} Running Phase 3: Certificate Transparency...")
+    cert_subs = certificate_transparency(target, target_folder)
 
     print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Passive enumeration completed: {len(passive_subs)} subdomains")
     save_phase_results(target_folder, 'passive_enum', passive_subs)
