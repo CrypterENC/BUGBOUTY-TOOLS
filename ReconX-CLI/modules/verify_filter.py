@@ -2,7 +2,7 @@ import subprocess
 import re
 import os
 
-def verification_filtering(all_subs_raw, target, output_folder=None):
+def verification_filtering(all_subs_raw, target, output_folder=None, wordlist=None):
     """
     Filter subdomains and verify live ones using httpx.
     Returns a list of live subdomains.

@@ -182,12 +182,14 @@ Examples:
 
     print(f"\n[+] Starting subdomain enumeration for {target}\n")
     
-    # Prompt for wordlists
+    # Prompt for wordlists in order
     print("\n" + "="*60)
     print("Wordlist Configuration")
     print("="*60)
+    passive_wordlist = get_wordlist_from_user("Phase 1 (Passive Enumeration)")
     active_wordlist = get_wordlist_from_user("Phase 2 (Active Enumeration)")
     cert_wordlist = get_wordlist_from_user("Phase 3 (Certificate Transparency)")
+    verify_wordlist = get_wordlist_from_user("Phase 4 (Verification & Filtering)")
 
     # Run phases in parallel for speed
     with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
@@ -213,7 +215,7 @@ Examples:
     print(f"[+] Total raw subdomains: {len(all_subs_raw)}")
 
     # Phase 4: Verification & Filtering
-    live_subs = verification_filtering(list(all_subs_raw), target, target_folder)
+    live_subs = verification_filtering(list(all_subs_raw), target, target_folder, verify_wordlist)
     print(f"[+] Live subdomains verified: {len(live_subs)}")
 
     # Output final results
