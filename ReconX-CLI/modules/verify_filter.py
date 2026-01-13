@@ -3,6 +3,14 @@ import re
 import os
 from colorama import Fore, Style
 
+def get_gowitness_options():
+    """Prompt user for gowitness timeout and retry options"""
+    print(f"\n{Fore.YELLOW}[?]{Style.RESET_ALL} Use better timeouts and retries for slow hosts in GoWitness?")
+    print(f"{Fore.CYAN}[*]{Style.RESET_ALL} Default: standard timeout")
+    print(f"{Fore.CYAN}[*]{Style.RESET_ALL} Better: 15s timeout with 2 retries (slower but more reliable)")
+    response = input(f"{Fore.YELLOW}>>>{Style.RESET_ALL} (y/n): ").strip().lower()
+    return response == 'y'
+
 def verification_filtering(all_subs_raw, target, output_folder=None, wordlist=None):
     """
     Filter subdomains and verify live ones using httpx.
@@ -54,7 +62,18 @@ def verification_filtering(all_subs_raw, target, output_folder=None, wordlist=No
     # Run gowitness to capture screenshots
     try:
         print(f"{Fore.CYAN}[*]{Style.RESET_ALL} Running GoWitness to capture screenshots...")
-        subprocess.run(['gowitness', 'scan', 'file', '-f', live_subs_file, '--write-db'], check=True, timeout=1800)
+        
+        # Ask user for gowitness options
+        use_better_options = get_gowitness_options()
+        
+        if use_better_options:
+            gowitness_cmd = ['gowitness', 'scan', 'file', '-f', live_subs_file, '--write-db', '--timeout', '15s', '--retry-count', '2']
+            print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Using better timeouts (15s) and retries (2)")
+        else:
+            gowitness_cmd = ['gowitness', 'scan', 'file', '-f', live_subs_file, '--write-db']
+            print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Using standard timeout")
+        
+        subprocess.run(gowitness_cmd, check=True, timeout=1800)
         print(f"{Fore.GREEN}[+]{Style.RESET_ALL} GoWitness screenshots captured successfully")
     except subprocess.TimeoutExpired:
         print(f"{Fore.RED}[-]{Style.RESET_ALL} gowitness timed out")
