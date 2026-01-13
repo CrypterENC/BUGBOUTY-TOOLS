@@ -136,7 +136,6 @@ def cleanup_intermediate_files(folder):
         'filtered_subs.txt',
         'live_subs_detailed.txt',
         'subfinder.txt',
-        'amass_passive.txt',
         'assetfinder.txt',
         'ffuf_subs.json'
     ]
