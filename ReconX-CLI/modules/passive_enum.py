@@ -1,5 +1,6 @@
 import subprocess
 import os
+from colorama import Fore, Style
 
 def passive_enumeration(target, output_folder=None):
     """
@@ -20,11 +21,11 @@ def passive_enumeration(target, output_folder=None):
             with open(subfinder_output, 'r') as f:
                 subs.update(line.strip() for line in f if line.strip())
     except subprocess.TimeoutExpired:
-        print("[-] subfinder timed out")
+        print(f"{Fore.RED}[-]{Style.RESET_ALL} subfinder timed out")
     except subprocess.CalledProcessError as e:
-        print(f"[-] subfinder failed: {e}")
+        print(f"{Fore.RED}[-]{Style.RESET_ALL} subfinder failed: {e}")
     except FileNotFoundError:
-        print("[-] subfinder not found")
+        print(f"{Fore.RED}[-]{Style.RESET_ALL} subfinder not found")
 
     # Run assetfinder
     try:
@@ -35,11 +36,11 @@ def passive_enumeration(target, output_folder=None):
             with open(assetfinder_output, 'r') as f:
                 subs.update(line.strip() for line in f if line.strip())
     except subprocess.TimeoutExpired:
-        print("[-] assetfinder timed out")
+        print(f"{Fore.RED}[-]{Style.RESET_ALL} assetfinder timed out")
     except subprocess.CalledProcessError as e:
-        print(f"[-] assetfinder failed: {e}")
+        print(f"{Fore.RED}[-]{Style.RESET_ALL} assetfinder failed: {e}")
     except FileNotFoundError:
-        print("[-] assetfinder not found")
+        print(f"{Fore.RED}[-]{Style.RESET_ALL} assetfinder not found")
 
     # Combine passive results into passive_subs.txt
     passive_subs_file = os.path.join(output_folder, 'passive_subs.txt')

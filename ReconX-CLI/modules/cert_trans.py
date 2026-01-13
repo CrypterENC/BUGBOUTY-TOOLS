@@ -1,5 +1,6 @@
 import requests
 import os
+from colorama import Fore, Style
 
 def certificate_transparency(target, output_folder=None, wordlist=None):
     """
@@ -23,9 +24,9 @@ def certificate_transparency(target, output_folder=None, wordlist=None):
                 if name and '.' in name:
                     subs.add(name)
         else:
-            print(f"[-] crt.sh request failed with status {response.status_code}")
+            print(f"{Fore.RED}[-]{Style.RESET_ALL} crt.sh request failed with status {response.status_code}")
     except requests.RequestException as e:
-        print(f"[-] Error fetching from crt.sh: {e}")
+        print(f"{Fore.RED}[-]{Style.RESET_ALL} Error fetching from crt.sh: {e}")
     
     # Create crt_subs.txt
     crt_subs_file = os.path.join(output_folder, 'crt_subs.txt')

@@ -7,6 +7,9 @@ import venv
 import platform
 import concurrent.futures
 import shutil
+from colorama import Fore, Back, Style, init
+
+init(autoreset=True)
 
 from utils.installer import ensure_tools_installed
 from modules.passive_enum import passive_enumeration
@@ -28,21 +31,21 @@ def create_and_activate_venv():
     venv_path = get_venv_path()
     
     if check_venv_active():
-        print("[+] Already running in a virtual environment")
+        print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Already running in a virtual environment")
         return True
     
-    print("[*] Creating Python virtual environment...")
+    print(f"{Fore.CYAN}[*]{Style.RESET_ALL} Creating Python virtual environment...")
     
     try:
         venv.create(venv_path, with_pip=True)
-        print(f"[+] Virtual environment created at {venv_path}")
+        print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Virtual environment created at {venv_path}")
     except Exception as e:
-        print(f"[-] Failed to create virtual environment: {e}")
+        print(f"{Fore.RED}[-]{Style.RESET_ALL} Failed to create virtual environment: {e}")
         return False
     
     pip_executable = get_pip_executable(venv_path)
     
-    print("[*] Installing Python dependencies from requirements.txt...")
+    print(f"{Fore.CYAN}[*]{Style.RESET_ALL} Installing Python dependencies from requirements.txt...")
     try:
         result = subprocess.run(
             [pip_executable, 'install', '-r', 'requirements.txt'],
@@ -52,17 +55,17 @@ def create_and_activate_venv():
             timeout=300
         )
         if result.returncode != 0:
-            print(f"[-] Failed to install dependencies: {result.stderr}")
+            print(f"{Fore.RED}[-]{Style.RESET_ALL} Failed to install dependencies: {result.stderr}")
             return False
-        print("[+] Python dependencies installed successfully")
+        print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Python dependencies installed successfully")
     except subprocess.TimeoutExpired:
-        print("[-] Dependency installation timed out")
+        print(f"{Fore.RED}[-]{Style.RESET_ALL} Dependency installation timed out")
         return False
     except Exception as e:
-        print(f"[-] Error installing dependencies: {e}")
+        print(f"{Fore.RED}[-]{Style.RESET_ALL} Error installing dependencies: {e}")
         return False
     
-    print("\n[*] Activating virtual environment...")
+    print(f"\n{Fore.CYAN}[*]{Style.RESET_ALL} Activating virtual environment...")
     relaunch_in_venv(venv_path)
     return True
 
@@ -85,12 +88,12 @@ def relaunch_in_venv(venv_path):
     python_executable = get_python_executable(venv_path)
     script_path = os.path.abspath(__file__)
     
-    print(f"[+] Relaunching script in virtual environment...\n")
+    print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Relaunching script in virtual environment...\n")
     
     try:
         os.execv(python_executable, [python_executable, script_path] + sys.argv[1:])
     except Exception as e:
-        print(f"[-] Failed to relaunch in venv: {e}")
+        print(f"{Fore.RED}[-]{Style.RESET_ALL} Failed to relaunch in venv: {e}")
         sys.exit(1)
 
 def create_target_folder(target):
@@ -110,21 +113,21 @@ def save_phase_results(folder, phase_name, subdomains):
 
 def get_wordlist_from_user(phase_name):
     """Prompt user for wordlist path"""
-    print(f"\n[?] Enter wordlist path for {phase_name} phase:")
-    print("[*] Leave empty to use default or skip this phase")
-    wordlist_path = input(">>> ").strip()
+    print(f"\n{Fore.YELLOW}[?]{Style.RESET_ALL} Enter wordlist path for {phase_name} phase:")
+    print(f"{Fore.CYAN}[*]{Style.RESET_ALL} Leave empty to use default or skip this phase")
+    wordlist_path = input(f"{Fore.YELLOW}>>>{Style.RESET_ALL} ").strip()
     
     if not wordlist_path:
         return None
     
     if not os.path.exists(wordlist_path):
-        print(f"[-] Wordlist not found: {wordlist_path}")
-        retry = input("[?] Try another path? (y/n): ").strip().lower()
+        print(f"{Fore.RED}[-]{Style.RESET_ALL} Wordlist not found: {wordlist_path}")
+        retry = input(f"{Fore.YELLOW}[?]{Style.RESET_ALL} Try another path? (y/n): ").strip().lower()
         if retry == 'y':
             return get_wordlist_from_user(phase_name)
         return None
     
-    print(f"[+] Using wordlist: {wordlist_path}")
+    print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Using wordlist: {wordlist_path}")
     return wordlist_path
 
 def cleanup_intermediate_files(folder):
@@ -145,17 +148,17 @@ def cleanup_intermediate_files(folder):
         if os.path.exists(filepath):
             try:
                 os.remove(filepath)
-                print(f"[*] Cleaned up: {filename}")
+                print(f"{Fore.CYAN}[*]{Style.RESET_ALL} Cleaned up: {filename}")
             except Exception as e:
-                print(f"[-] Failed to remove {filename}: {e}")
+                print(f"{Fore.RED}[-]{Style.RESET_ALL} Failed to remove {filename}: {e}")
 
 def main():
     if not check_venv_active():
         print("\n" + "="*60)
-        print("ReconX-CLI: Automated Subdomain Enumeration Tool")
+        print(f"{Fore.CYAN}ReconX-CLI: Automated Subdomain Enumeration Tool{Style.RESET_ALL}")
         print("="*60 + "\n")
         if not create_and_activate_venv():
-            print("[-] Failed to setup virtual environment")
+            print(f"{Fore.RED}[-]{Style.RESET_ALL} Failed to setup virtual environment")
             sys.exit(1)
     
     parser = argparse.ArgumentParser(
@@ -172,18 +175,18 @@ Examples:
 
     target = args.TARGET
 
-    print(f"\n[*] Checking and installing required tools...\n")
+    print(f"\n{Fore.CYAN}[*]{Style.RESET_ALL} Checking and installing required tools...\n")
     ensure_tools_installed()
 
     # Create target-specific folder
     target_folder = create_target_folder(target)
-    print(f"\n[+] Created results folder: {target_folder}\n")
+    print(f"\n{Fore.GREEN}[+]{Style.RESET_ALL} Created results folder: {target_folder}\n")
 
-    print(f"\n[+] Starting subdomain enumeration for {target}\n")
+    print(f"\n{Fore.GREEN}[+]{Style.RESET_ALL} Starting subdomain enumeration for {target}\n")
     
     # Prompt for wordlist
     print("\n" + "="*60)
-    print("Wordlist Configuration")
+    print(f"{Fore.CYAN}Wordlist Configuration{Style.RESET_ALL}")
     print("="*60)
     active_wordlist = get_wordlist_from_user("Phase 2 (Active Enumeration)")
 
@@ -197,13 +200,13 @@ Examples:
         active_subs = active_future.result()
         cert_subs = cert_future.result()
 
-    print(f"[+] Passive enumeration completed: {len(passive_subs)} subdomains")
+    print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Passive enumeration completed: {len(passive_subs)} subdomains")
     save_phase_results(target_folder, 'passive_enum', passive_subs)
     
-    print(f"[+] Active enumeration completed: {len(active_subs)} subdomains")
+    print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Active enumeration completed: {len(active_subs)} subdomains")
     save_phase_results(target_folder, 'active_enum', active_subs)
     
-    print(f"[+] Certificate transparency completed: {len(cert_subs)} subdomains")
+    print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Certificate transparency completed: {len(cert_subs)} subdomains")
     save_phase_results(target_folder, 'cert_trans', cert_subs)
 
     # Combine raw subdomains from all three phases
@@ -215,11 +218,11 @@ Examples:
         for sub in sorted(all_subs_raw):
             f.write(f'{sub}\n')
     
-    print(f"[+] Total raw subdomains: {len(all_subs_raw)}")
+    print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Total raw subdomains: {len(all_subs_raw)}")
 
     # Phase 4: Verification & Filtering
     live_subs = verification_filtering(list(all_subs_raw), target, target_folder)
-    print(f"[+] Live subdomains verified: {len(live_subs)}")
+    print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Live subdomains verified: {len(live_subs)}")
 
     # Output final results
     output_file = os.path.join(target_folder, 'live_subs.txt')
@@ -227,13 +230,13 @@ Examples:
         for sub in sorted(live_subs):
             f.write(f"{sub}\n")
 
-    print(f"\n[+] Results saved to {output_file}\n")
+    print(f"\n{Fore.GREEN}[+]{Style.RESET_ALL} Results saved to {output_file}\n")
 
     # Cleanup intermediate files
-    print(f"[*] Cleaning up intermediate files...\n")
+    print(f"{Fore.CYAN}[*]{Style.RESET_ALL} Cleaning up intermediate files...\n")
     cleanup_intermediate_files(target_folder)
 
-    print(f"[+] Enumeration completed successfully!\n")
+    print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Enumeration completed successfully!\n")
 
 if __name__ == "__main__":
     main()

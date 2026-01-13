@@ -2,6 +2,7 @@ import subprocess
 import json
 import os
 from urllib.parse import urlparse
+from colorama import Fore, Style
 
 def active_enumeration(target, output_folder=None, wordlist=None):
     """
@@ -20,7 +21,7 @@ def active_enumeration(target, output_folder=None, wordlist=None):
             wordlist = '/usr/share/wordlists/assetnote/best-dns-wordlist.txt'
         
         if not os.path.exists(wordlist):
-            print(f"[-] Wordlist not found: {wordlist}")
+            print(f"{Fore.RED}[-]{Style.RESET_ALL} Wordlist not found: {wordlist}")
             return list(subs)
         
         ffuf_output = os.path.join(output_folder, 'ffuf_subs.json')
@@ -36,11 +37,11 @@ def active_enumeration(target, output_folder=None, wordlist=None):
                     sub_part = domain[:-len(f'.{target}')]
                     subs.add(f'{sub_part}.{target}')
     except subprocess.TimeoutExpired:
-        print("[-] ffuf timed out")
+        print(f"{Fore.RED}[-]{Style.RESET_ALL} ffuf timed out")
     except subprocess.CalledProcessError as e:
-        print(f"[-] ffuf failed: {e}")
+        print(f"{Fore.RED}[-]{Style.RESET_ALL} ffuf failed: {e}")
     except FileNotFoundError:
-        print("[-] ffuf not found")
+        print(f"{Fore.RED}[-]{Style.RESET_ALL} ffuf not found")
 
     # Combine active results into active_subs.txt
     active_subs_file = os.path.join(output_folder, 'active_subs.txt')

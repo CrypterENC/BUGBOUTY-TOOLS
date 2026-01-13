@@ -1,6 +1,7 @@
 import subprocess
 import re
 import os
+from colorama import Fore, Style
 
 def verification_filtering(all_subs_raw, target, output_folder=None, wordlist=None):
     """
@@ -38,11 +39,11 @@ def verification_filtering(all_subs_raw, target, output_folder=None, wordlist=No
                         url = url.replace('https://', '').replace('http://', '')
                         live_subs.append(url)
     except subprocess.TimeoutExpired:
-        print("[-] httpx timed out")
+        print(f"{Fore.RED}[-]{Style.RESET_ALL} httpx timed out")
     except subprocess.CalledProcessError as e:
-        print(f"[-] httpx failed: {e}")
+        print(f"{Fore.RED}[-]{Style.RESET_ALL} httpx failed: {e}")
     except FileNotFoundError:
-        print("[-] httpx not found")
+        print(f"{Fore.RED}[-]{Style.RESET_ALL} httpx not found")
 
     # Create live_subs.txt with extracted live subdomains
     live_subs_file = os.path.join(output_folder, 'live_subs.txt')
