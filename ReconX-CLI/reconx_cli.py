@@ -112,6 +112,15 @@ def save_phase_results(folder, phase_name, subdomains):
             f.write(f"{sub}\n")
     return filename
 
+def get_user_input(prompt, required=True):
+    """Get user input with validation"""
+    while True:
+        user_input = input(f"{Fore.YELLOW}>>>{Style.RESET_ALL} {prompt}").strip()
+        if required and not user_input:
+            print(f"{Fore.RED}[-]{Style.RESET_ALL} This field is required.")
+            continue
+        return user_input
+
 def get_wordlist_from_user(phase_name):
     """Prompt user for wordlist path"""
     print(f"\n{Fore.YELLOW}[?]{Style.RESET_ALL} Enter wordlist path for {phase_name} phase:")
