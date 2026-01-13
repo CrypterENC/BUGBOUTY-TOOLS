@@ -186,8 +186,8 @@ Examples:
     print("\n" + "="*60)
     print("Wordlist Configuration")
     print("="*60)
-    active_wordlist = get_wordlist_from_user("Active Enumeration (FFUF)")
-    cert_wordlist = get_wordlist_from_user("Certificate Transparency")
+    active_wordlist = get_wordlist_from_user("Phase 2 (Active Enumeration)")
+    cert_wordlist = get_wordlist_from_user("Phase 3 (Certificate Transparency)")
 
     # Run phases in parallel for speed
     with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
